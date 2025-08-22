@@ -1,0 +1,43 @@
+#!/bin/bash
+
+warned=false
+while true; do
+	battery_level=$(cat /sys/class/power_supply/BAT0/capacity)
+	plugged_in=$(cat /sys/class/power_supply/AC0/online)
+	if [[ "$warned" == false && "$battery_level" -le 15 && "$plugged_in" -lt 1 ]]; then
+		message="The battery resource is now equal or less than 15%. Please plug in the power cord."
+		notify-send "Low battery resource" "$message"
+		wall "$message"
+		warned=true
+	elif [[ "$warned" == true && "$battery_level" -gt 15 ]]; then
+		warned=false
+	fi
+	if [[ "$battery_level" -le 7 && "$plugged_in" -lt 1 ]]; then
+		message="The battery resource is currently in a critically low level. The system is suspending in 20 seconds; otherwise permanent damage will be done to the battery. Please plug in the power cord right away."
+		notify-send "CRITICALLY LOW BATTERY RESOURCE" "$message"
+		wall "$message"
+		sleep 3
+		for i in {20..1}; do
+			plugged_in=$(cat /sys/class/power_supply/AC0/online)
+			if [[ "$plugged_in" -gt 0 ]]; then
+				message="That was dramatic."
+				notify-send "Suspension aborted" "$message"
+				wall "$message"
+				break
+			fi
+			message="$i..."
+			notify-send "Suspension countdown in progress" "$message"
+			wall "$message"
+			sleep 1
+		done
+		plugged_in=$(cat /sys/class/power_supply/AC0/online)
+		if [[ "$plugged_in" -gt 0 ]]; then
+			message="Woah, your heart probably stopped for a few seconds."
+			notify-send "Suspension aborted... but good timing bro" "$message"
+			wall "$message"
+		else
+			systemctl suspend
+		fi
+	fi
+	sleep 10
+done

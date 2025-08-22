@@ -1,0 +1,10 @@
+[Unit]
+Description=GDucpm Battery Monitor Daemon
+
+[Service]
+ExecStart=/usr/local/bin/ttybatd
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
