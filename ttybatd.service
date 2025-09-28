@@ -2,7 +2,7 @@
 Description=GDucpm Battery Monitor Daemon
 
 [Service]
-ExecStart=/usr/local/bin/ttybatd
+ExecStart=/usr/bin/ttybatd
 Restart=always
 User=root
 
